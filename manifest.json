@@ -1,0 +1,7 @@
+{
+  "name": "Pearmill Creative Generator",
+  "id": "811390951390649406",
+  "api": "1.0.0",
+  "main": "dist/index.js",
+  "ui": "ui.html"
+}

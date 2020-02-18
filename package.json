@@ -1,0 +1,36 @@
+{
+  "scripts": {
+    "build": "webpack",
+    "dev": "webpack --config webpack.config.watch.js",
+    "test": "jest",
+    "test-init": "jest --init"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-env",
+        {
+          "useBuiltIns": "usage",
+          "corejs": 3,
+          "targets": {
+            "firefox": "64"
+          }
+        }
+      ],
+      "@babel/preset-typescript"
+    ]
+  },
+  "dependencies": {
+    "papaparse": "^5.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.4",
+    "@babel/preset-env": "^7.8.4",
+    "@babel/preset-typescript": "^7.8.3",
+    "babel-loader": "^8.0.6",
+    "core-js": "^3.6.4",
+    "regenerator-runtime": "^0.13.3",
+    "webpack": "^4.41.6",
+    "webpack-cli": "^3.3.11"
+  }
+}

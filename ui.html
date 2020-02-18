@@ -1,0 +1,134 @@
+<div id='controls'>
+  <p>
+    Pick CSV: <input id='file' type='file' />
+  </p>
+  
+  <button id="create">Generate</button>
+  <button id="cancel">Cancel</button>
+</div>
+
+<div id='spinner' class='hidden'>
+  <p>Loading...</p>
+  <div class="lds-ring"><div></div><div></div><div></div><div></div></div>
+</div>
+<script>
+
+document.getElementById('create').onclick = () => {
+  var controls = document.getElementById('controls');
+  var spinner = document.getElementById('spinner');
+
+  spinner.classList.remove('hidden');
+  controls.classList.add('hidden');
+
+  var fileInput = document.getElementById('file');
+
+  var file = fileInput.files[0];
+
+  if (file) {
+    var reader = new FileReader();
+    reader.readAsText(file, "UTF-8");
+
+    reader.onload = function (evt) {
+        parent.postMessage({ pluginMessage: { type: 'process-csv', data: evt.target.result } }, '*')    
+    }
+
+    reader.onerror = function (evt) {
+        console.error(evt);
+        parent.postMessage({ pluginMessage: { type: 'error', message: 'Error reading file.' } }, '*')
+    }
+  } else {
+    parent.postMessage({ pluginMessage: { type: 'error', message: 'No file chosen.' } }, '*')
+  }
+}
+
+document.getElementById('cancel').onclick = () => {
+  parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+}
+
+
+window.onmessage = async (event) => {
+    const data = event.data.pluginMessage
+    console.log('data', data)
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+
+    const image = await new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(img);
+      img.onerror = (evt) => {
+        console.error(evt);
+        parent.postMessage({ pluginMessage: { type: 'error', message: 'Error download image: ' + data.src } }, '*')
+      }
+      img.src = data.src;
+    });
+
+    canvas.width = image.width
+    canvas.height = image.height
+
+    ctx.drawImage(image, 0, 0);
+
+    canvas.toBlob(blob => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        window.parent.postMessage({ pluginMessage: {
+          type: 'image-data',
+          id: data.id,
+          filter: data.filter,
+          parent_id: data.parent_id,
+          data: new Uint8Array(reader.result)
+        }}, '*')
+      };
+
+      reader.onerror = () => {
+        parent.postMessage({ pluginMessage: { type: 'error', message: 'Error download image: ' + data.src } }, '*')
+      };
+
+      reader.readAsArrayBuffer(blob);
+  });
+}
+
+</script>
+
+<style>
+.hidden {
+  display: none;
+}
+
+#spinner {
+  margin: 50px auto 0;
+  text-align: center;
+  width: 64px;
+}
+
+.lds-ring div {
+  box-sizing: border-box;
+  display: block;
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: 8px;
+  border: 8px solid #DB565C;
+  border-radius: 50%;
+  animation: lds-ring 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  border-color: #DB565C transparent transparent transparent;
+}
+.lds-ring div:nth-child(1) {
+  animation-delay: -0.45s;
+}
+.lds-ring div:nth-child(2) {
+  animation-delay: -0.3s;
+}
+.lds-ring div:nth-child(3) {
+  animation-delay: -0.15s;
+}
+@keyframes lds-ring {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+</style>
