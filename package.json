@@ -21,7 +21,7 @@
     ]
   },
   "dependencies": {
-    "papaparse": "^5.1.1"
+    "papaparse": "^5.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.8.4",
